@@ -3,14 +3,19 @@ package edu.utah.cs4962.project1;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.PorterDuff;
 import android.graphics.RectF;
+import android.provider.Browser;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -20,11 +25,13 @@ public class PaintView extends View {
 
     RectF _contentRect;
     float _radius;
-    int _color = Color.CYAN;
+    int _color = 0;
+    Boolean isActive = false;
 
-    public interface OnSplotchTouchListener{
+    public interface OnSplotchTouchListener {
         public void onSplotchTouched(PaintView v);
     }
+
     OnSplotchTouchListener _onSplotchTouchListener = null;
 
     public PaintView(Context context) {
@@ -44,16 +51,16 @@ public class PaintView extends View {
         this._color = _color;
 
         // Redraws the circle so it can be the new color.(Marks it for redraw,
-        // then generates a onDraw() when it's ready)
+        // then generates an onDraw() when it's ready)
         invalidate();
     }
 
     // The parameter is the interface type.
-    public void setOnSplotchTouchListener(OnSplotchTouchListener listener){
+    public void setOnSplotchTouchListener(OnSplotchTouchListener listener) {
         _onSplotchTouchListener = listener;
     }
 
-    public OnSplotchTouchListener getOnSplotchTouchListener(){
+    public OnSplotchTouchListener getOnSplotchTouchListener() {
         return _onSplotchTouchListener;
     }
 
@@ -74,13 +81,30 @@ public class PaintView extends View {
         float distance = (float) Math.sqrt(Math.pow(CircleCenterX - x, 2) + Math.pow(CircleCenterY - y, 2));
         if (distance < _radius) {
             Log.i("paint_view", "Touched inside the circle");
-            if (_onSplotchTouchListener != null)
-            {
+            if (_onSplotchTouchListener != null) {
+                isActive = true;
+                makeOtherSplotchesInactive();
+                invalidate();
                 _onSplotchTouchListener.onSplotchTouched(this);
             }
         }
 
         return super.onTouchEvent(event);
+    }
+
+    private void makeOtherSplotchesInactive() {
+        ArrayList<View> Children = PaletteView._children;
+
+        PaintView child = null;
+        for (int childIndex = 0; childIndex < Children.size(); childIndex++) {
+            child = ((PaintView) Children.get(childIndex));
+            if (child != this && child.isActive) {
+                child.isActive = false;
+                child.invalidate();
+            }
+
+        }
+        //invalidate();
     }
 
     @Override
@@ -90,6 +114,10 @@ public class PaintView extends View {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(_color);
         Path path = new Path();
+        Paint highLightPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        highLightPaint.setColor(Color.GRAY);
+        Path highLightPath = new Path();
+
 
         _contentRect = new RectF();
         _contentRect.left = getPaddingLeft();
@@ -98,73 +126,71 @@ public class PaintView extends View {
         _contentRect.bottom = getHeight() - getPaddingBottom();
 
         PointF circleCenter = new PointF(_contentRect.centerX(), _contentRect.centerY());
-        float maxRadius = Math.min(_contentRect.width() * 0.3f, _contentRect.height() * 0.3f);
-        float minRadius = 0.25f * maxRadius;
+        float maxRadius = Math.min(_contentRect.width() * 0.5f, _contentRect.height() * 0.5f);
+        float minRadius = 0.5f * maxRadius;
         _radius = minRadius + (maxRadius - minRadius) * 0.5f;
-        int pointCount = 30;
+        int pointCount = 43;
 
-        for(int pointIndex = 0; pointIndex < pointCount; pointIndex++){
-            //PointF point = new PointF();
-            //point.x = getWidth() * 0.5f;
-            //point.y = getHeight() * 0.5f;
+        for (int pointIndex = 0; pointIndex < pointCount; pointIndex += 3) {
 
-            PointF point = new PointF();
 
-            _radius += (Math.random() - 0.5) * 2.0 * 0.05 * _contentRect.width();
+            //_radius += (Math.random() - 0.5) * 2 * 0.05 * _contentRect.width();
 
             // ((Math.random() - 0.5) * 2.0f) gives a number between -1 and 1
             //_radius += ((Math.random() - 0.5) * 2.0f) * (maxRadius - _radius);
-            point.x = circleCenter.x + _radius * (float)Math.cos(((double)pointIndex /
-                    (double)pointCount) * 2.0 * Math.PI);
+            PointF point = new PointF();
+            point.x = circleCenter.x + _radius * (float) Math.cos(((double) pointIndex /
+                    (double) pointCount) * 2.0 * Math.PI);
+            point.y = circleCenter.y + _radius * (float) Math.sin(((double) pointIndex /
+                    (double) pointCount) * 2.0 * Math.PI);
 
-            point.y = circleCenter.y + _radius * (float)Math.sin(((double)pointIndex /
-                    (double)pointCount) * 2.0 * Math.PI);
+            PointF control1 = new PointF();
+            float control1Radius = _radius + (float) (Math.random() - 0.5) * 2.0f * 30.0f;
+            control1.x = circleCenter.x + control1Radius * (float) Math.cos(((double) pointIndex /
+                    (double) pointCount) * 2.0 * Math.PI);
+            control1.y = circleCenter.y + control1Radius * (float) Math.sin(((double) pointIndex /
+                    (double) pointCount) * 2.0 * Math.PI);
 
-            if(pointIndex == 0){
-                path.moveTo(point.x, point.y);
+            PointF control2 = new PointF();
+            float control2Radius = _radius + (float) (Math.random() - 0.5) * 2.0f * 30.0f;
+            control2.x = circleCenter.x + control2Radius * (float) Math.cos(((double) pointIndex /
+                    (double) pointCount) * 2.0 * Math.PI);
+
+            control2.y = circleCenter.y + control2Radius * (float) Math.sin(((double) pointIndex /
+                    (double) pointCount) * 2.0 * Math.PI);
+
+            // If is active create a blob which is just a few pixes bigger to show the gray
+            //  behind the blob creating the effect of a shadow and making it the selected blob.
+            if (isActive) {
+                if (pointIndex == 0) {
+                    highLightPath.moveTo(point.x, point.y);
+                } else {
+                    highLightPath.cubicTo(control1.x + 15, control1.y + 15, control2.x + 15, control2.y + 15, point.x + 15, point.y + 15);
+                }
             }
             else{
-                path.lineTo(point.x, point.y);
+                if (pointIndex == 0) {
+                    highLightPath.moveTo(0, 0);
+                } else {
+                    highLightPath.cubicTo(0,0,0,0,0,0);
+                }
+            }
+
+            if (pointIndex == 0) {
+                path.moveTo(point.x, point.y);
+            } else {
+                //path.lineTo(point.x, point.y);
+                path.cubicTo(control1.x, control1.y, control2.x, control2.y, point.x, point.y);
             }
         }
+        //ColorFilter colorFiltrTint = new LightingColorFilter(Color.WHITE, Color.RED);
+        //paint.setColorFilter(colorFiltrTint);
+        //if (isActive) {
+            canvas.drawPath(highLightPath, highLightPaint);
+        //}
 
         canvas.drawPath(path, paint);
 
-        /**** Class Examples ****\
-         // Must specify one of the flags in the paint.
-         // -> ANTI_ALIAS_FLAG makes line look much smoother, to avoid jagged lines.
-         Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-         //Param - float width of line
-         linePaint.setStrokeWidth(10.0f);
-
-         // drawLine Params - float startX, float startY, float stopX, float stopY, Paint paint.
-         canvas.drawLine(10.0f, 10.0f, 100.0f, 100.0f, linePaint);
-
-         // Four values would draw one line, if we did 8 then it would draw two lines.
-         // NOTE: Look above for the values, first val startX, startY ...
-         // NOTE2: Origin starts at the upper left hand corner.
-         float[] points = {35.4f, 435.4f, 232.4f, 97.3f};
-
-         // drawLines Params - (start reading floats, and stop reading)float[] pts, int offset, int count, Paint paint.
-         canvas.drawLines(points, linePaint);
-
-         // drawOval Params - float left, float top, float right, float bottom
-         // Takes top left corner point and bottom right corner point of the rectangle
-         // Giving 440.5 means width of the rectangle is 400, and 186.0 means height will be 100.
-         linePaint.setColor(0x7F445588); // Half opacity.
-         canvas.drawOval(new RectF(40.5f, 86.0f, 440.5f, 186.0f), linePaint);
-
-         Path path = new Path();
-         path.moveTo(40.0f, 200.0f);
-         path.lineTo(250.0f, 600.0f);
-         path.lineTo(300.0f, 760.0f);
-         // Actually draws the line that we defined if we change the style to stroke.
-         // Otherwise it would just fill the area of the path we defined.
-         path.close(); // Same as calling lineTo(40.0f, 200.0f)
-         linePaint.setStyle(Paint.Style.STROKE);
-         canvas.drawPath(path, linePaint);
-         */
     }
 
     @Override
@@ -182,35 +208,35 @@ public class PaintView extends View {
         int width = getSuggestedMinimumWidth();
         int height = getSuggestedMinimumHeight();
 
-        if (widthMode == MeasureSpec.AT_MOST){
+        if (widthMode == MeasureSpec.AT_MOST) {
             width = widthSpec;
         }
-        if (heightMode == MeasureSpec.AT_MOST){
+        if (heightMode == MeasureSpec.AT_MOST) {
             height = heightSpec;
         }
 
-        if (widthMode ==  MeasureSpec.EXACTLY){
+        if (widthMode == MeasureSpec.EXACTLY) {
             width = widthSpec;
             height = width;
         }
-        if (heightMode == MeasureSpec.EXACTLY){
+        if (heightMode == MeasureSpec.EXACTLY) {
             height = heightSpec;
             width = height;
         }
 
         // TODO; RESPECT THE PADDING!
-        if (width > height && widthMode != MeasureSpec.EXACTLY){
+        if (width > height && widthMode != MeasureSpec.EXACTLY) {
             width = height;
         }
-        if (height > width && heightMode != MeasureSpec.EXACTLY){
+        if (height > width && heightMode != MeasureSpec.EXACTLY) {
             height = width;
         }
 
         // resolveSizeAndState(int size, int measureSpec, int childMeasuredState)
         // -> childMeasuredState - boolean asks if you are happy with the size or not.
         setMeasuredDimension(resolveSizeAndState(width, widthMeasureSpec,
-                        width < getSuggestedMinimumWidth() ? MEASURED_STATE_TOO_SMALL: 0),
+                        width < getSuggestedMinimumWidth() ? MEASURED_STATE_TOO_SMALL : 0),
                 resolveSizeAndState(height, heightMeasureSpec,
-                        height < getSuggestedMinimumHeight() ? MEASURED_STATE_TOO_SMALL: 0));
+                        height < getSuggestedMinimumHeight() ? MEASURED_STATE_TOO_SMALL : 0));
     }
 }
