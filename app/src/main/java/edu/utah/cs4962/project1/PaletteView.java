@@ -13,9 +13,12 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by Jesus Zarate on 9/15/14.
@@ -24,7 +27,7 @@ public class PaletteView extends ViewGroup {
 
     public static ArrayList<View> _children = new ArrayList<View>();
     private ArrayList<PointF> _points = new ArrayList<PointF>();
-    private HashMap<PaintView, PointF> _paintSplotches = new HashMap<PaintView, PointF>();
+    private HashMap<PaintView, PointF> _centerPosOfSplotches = new HashMap<PaintView, PointF>();
 
 //    private float _initialXPos = 0.0f;
 //    private float _initialYPos = 0.0f;
@@ -37,8 +40,12 @@ public class PaletteView extends ViewGroup {
         super(context);
     }
 
-    public void addColor() {
+    public void addNewColor() {
+        PaintView paintView = new PaintView(getContext());
 
+        paintView.setColor(0xFFFF1493);
+        addView(paintView, new LinearLayout.LayoutParams(200, ViewGroup.LayoutParams.WRAP_CONTENT));
+        invalidate();
     }
 
     public void removeColor(PaintView paintView) {
@@ -69,11 +76,11 @@ public class PaletteView extends ViewGroup {
 
                     // If the paint is dragged on top of another paint mix them together to
                     // create a new color.
-//                    if () {
-//                        createNewColor();
-//                    }
-                    // Otherwise return the paint to its original location
+                    if (mixPaint(child, x, y)) {
+                        addNewColor();
+                    }
 
+                    // Otherwise return the paint to its original location
                     ObjectAnimator animator = new ObjectAnimator();
                     animator.setTarget(child);
                     animator.setPropertyName("x");
@@ -86,9 +93,9 @@ public class PaletteView extends ViewGroup {
                     //  move from the endpoint back to the original position.
                     animator.setValues(
                             PropertyValuesHolder.ofFloat("x",
-                                    new float[]{x - child.getWidth() / 2, _paintSplotches.get(child).x - centerOfChildX}),
+                                    new float[]{x - child.getWidth() / 2, _centerPosOfSplotches.get(child).x - centerOfChildX}),
                             PropertyValuesHolder.ofFloat("y",
-                                    new float[]{y - child.getHeight() / 2, _paintSplotches.get(child).y - centerOfChildY})
+                                    new float[]{y - child.getHeight() / 2, _centerPosOfSplotches.get(child).y - centerOfChildY})
                     );
                     animator.start();
 
@@ -98,8 +105,31 @@ public class PaletteView extends ViewGroup {
         return true;
     }
 
-    private void createNewColor() {
+    /**
+     *
+     * @param SelectedChild
+     * @param x - x point of the position of the selected child.
+     * @param y - y point of the position of the selected child.
+     * @return True - If the selected splotch is over another splotch so
+     * the colors can be mixed.
+     */
+    private boolean mixPaint(PaintView SelectedChild, float x, float y) {
 
+        Iterator itr = _centerPosOfSplotches.entrySet().iterator();
+        while(itr.hasNext()){
+            Map.Entry pairs = (Map.Entry)itr.next();
+            if(!pairs.getKey().equals(SelectedChild)){
+
+                float childCenterX = ((PointF)pairs.getValue()).x;
+                float childCenterY = ((PointF)pairs.getValue()).y;
+                float distance = (float) Math.sqrt(Math.pow(childCenterX - x, 2) + Math.pow(childCenterY - y, 2));
+                if(distance < ((PaintView)pairs.getKey()).getRadius()){
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -226,7 +256,7 @@ public class PaletteView extends ViewGroup {
             int childCenterX = (int) (_layoutRect.centerX() + _layoutRect.width() * 0.6 * Math.cos(angle));
             int childCenterY = (int) (_layoutRect.centerY() + _layoutRect.height() * 0.6 * Math.sin(angle));
 
-            _paintSplotches.put((PaintView) getChildAt(childIndex), new PointF(childCenterX, childCenterY));
+            _centerPosOfSplotches.put((PaintView) getChildAt(childIndex), new PointF(childCenterX, childCenterY));
 
             View child = getChildAt(childIndex);
             Rect childLayout = new Rect();
