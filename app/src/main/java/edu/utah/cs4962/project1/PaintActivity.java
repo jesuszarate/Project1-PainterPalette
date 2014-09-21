@@ -9,6 +9,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -37,7 +38,7 @@ public class PaintActivity extends Activity {
         // Determine how many splotches we want on the palette
         for (int splotchIndex = 0; splotchIndex < 6; splotchIndex++) {
 
-            PaintView paintView = new PaintView(this);
+            final PaintView paintView = new PaintView(this);
             //paintView.setBackgroundColor(Color.TRANSPARENT);
 
             if(splotchIndex == 0) {
@@ -65,13 +66,13 @@ public class PaintActivity extends Activity {
 
             paletteLayout.addView(paintView, new LinearLayout.LayoutParams(200, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-            paintView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //((PaintView)v).setVisibility(View.GONE);
-
-                }
-            });
+//            paintView.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    //((PaintView)v).setVisibility(View.GONE);
+//
+//                }
+//            });
 
             // _paintView.setOnSplotchTouchListener() -> Just a method.
             // new View.OnSplotchTouchListener() -> Interface definition.
