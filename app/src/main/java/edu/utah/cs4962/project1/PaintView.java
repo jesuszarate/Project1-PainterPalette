@@ -13,7 +13,7 @@ import android.view.View;
 import java.util.ArrayList;
 
 /**
- * Created by jesuszarate on 9/8/14.
+ * Created by Jesus Zarate on 9/8/14.
  */
 public class PaintView extends View {
 

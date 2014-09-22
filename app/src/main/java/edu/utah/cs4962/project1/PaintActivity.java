@@ -39,8 +39,7 @@ public class PaintActivity extends Activity {
         // Determine how many splotches we want on the palette
         for (int splotchIndex = 0; splotchIndex < 6; splotchIndex++) {
 
-            final PaintView paintView = new PaintView(this);
-            //paintView.setBackgroundColor(Color.TRANSPARENT);
+            PaintView paintView = new PaintView(this);
 
             if(splotchIndex == 0) {
                 paintView.setColor(Color.RED);
@@ -67,27 +66,9 @@ public class PaintActivity extends Activity {
 
             paletteLayout.addView(paintView, new LinearLayout.LayoutParams(200, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-//            paintView.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    //((PaintView)v).setVisibility(View.GONE);
-//
-//                }
-//            });
-
-            // _paintView.setOnSplotchTouchListener() -> Just a method.
-            // new View.OnSplotchTouchListener() -> Interface definition.
-            // The rest -> an anonymous class definition. (An anonymous inner class of activity)
             paintView.setOnSplotchTouchListener(new PaintView.OnSplotchTouchListener() {
                 @Override
                 public void onSplotchTouched(PaintView v) {
-                    //((PaintView)v).setColor(Color.CYAN);
-
-                    //paletteLayout.removeColor((PaintView)v);
-
-//                    ((PaintView)v).setAsSelected();
-                    //((PaintView)v).setColor(Color.RED);
-                    //((PaintView)v).setBackgroundColor(Color.CYAN);
                     paintAreaView.invalidate();
                 }
             });
