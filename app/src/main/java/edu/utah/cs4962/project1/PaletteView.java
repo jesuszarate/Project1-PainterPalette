@@ -40,18 +40,41 @@ public class PaletteView extends ViewGroup {
         super(context);
     }
 
-    public void addNewColor() {
+    public void addNewColor(PaintView child, PaintView mixWithThisColor) {
         PaintView paintView = new PaintView(getContext());
 
-        paintView.setColor(0xFFFF1493);
+
+        int firstColor = child.getColor();
+        int secondColor = mixWithThisColor.getColor();
+        int red1 = firstColor & 0x00FF0000;
+        int red2 = secondColor & 0x00FF0000;
+
+        int green1 = firstColor & 0x0000FF00;
+        int green2 = secondColor & 0x0000FF00;
+
+        int blue1 = firstColor & 0x000000FF;
+        int blue2 = secondColor & 0x000000FF;
+
+        int red = (red1 + red2) / 2;
+        int green = (green1 + green2) / 2;
+        int blue = (blue1 + blue2) / 2;
+
+        int color = 0xFF000000 | red | green | blue;
+
+        paintView.setColor(color);
         //addView(paintView, new LinearLayout.LayoutParams(200, ViewGroup.LayoutParams.WRAP_CONTENT));
         addView(paintView, new LayoutParams(200, LayoutParams.WRAP_CONTENT));
-        invalidate();
+
+        paintView.setOnSplotchTouchListener(new PaintView.OnSplotchTouchListener() {
+            @Override
+            public void onSplotchTouched(PaintView v) {
+                invalidate();
+            }
+        });
     }
 
     public void removeColor(PaintView paintView) {
         paintView.setVisibility(GONE);
-//        invalidate();
     }
 
     @Override
@@ -66,44 +89,62 @@ public class PaletteView extends ViewGroup {
                 child.setX(x - child.getWidth() / 2);
                 child.setY(y - child.getHeight() / 2);
 
-//                // On mouse click down, save the original points of the
-//                // paint splotch.
-//                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-//                    _initialXPos = x;
-//                    _initialYPos = y;
-//                }
-
                 if (event.getActionMasked() == MotionEvent.ACTION_UP) {
 
                     // If the paint is dragged on top of another paint mix them together to
                     // create a new color.
-                    if (mixPaint(child, x, y)) {
-                        addNewColor();
+                    PaintView mixWithThisColor = mixPaint(child, x, y);
+                    if (mixWithThisColor != null) {
+                        addNewColor(child, mixWithThisColor);
+                        child.makeOtherSplotchesInactive();
                     }
 
-                    // Otherwise return the paint to its original location
-                    ObjectAnimator animator = new ObjectAnimator();
-                    animator.setTarget(child);
-                    animator.setPropertyName("x");
-                    animator.setDuration(200);
+//                    // Otherwise return the paint to its original location
+//                    ObjectAnimator animator = new ObjectAnimator();
+//                    animator.setTarget(child);
+//                    animator.setDuration(200);
+//
+//                    float centerOfChildX = child.getWidth() / 2;
+//                    float centerOfChildY = child.getHeight() / 2;
+//
+//                    // Set the splotch back to its original place. Figure out how to
+//                    //  move from the endpoint back to the original position.
+//                    animator.setValues(
+//                            PropertyValuesHolder.ofFloat("x",
+//                                    new float[]{x - child.getWidth() / 2, _centerPosOfSplotches.get(child).x - centerOfChildX}),
+//                            PropertyValuesHolder.ofFloat("y",
+//                                    new float[]{y - child.getHeight() / 2, _centerPosOfSplotches.get(child).y - centerOfChildY})
+//                    );
+//                    animator.start();
 
-                    float centerOfChildX = child.getWidth() / 2;
-                    float centerOfChildY = child.getHeight() / 2;
+                    returnChildToOriginalSpot(child, x, y);
 
-                    // Set the splotch back to its original place. Figure out how to
-                    //  move from the endpoint back to the original position.
-                    animator.setValues(
-                            PropertyValuesHolder.ofFloat("x",
-                                    new float[]{x - child.getWidth() / 2, _centerPosOfSplotches.get(child).x - centerOfChildX}),
-                            PropertyValuesHolder.ofFloat("y",
-                                    new float[]{y - child.getHeight() / 2, _centerPosOfSplotches.get(child).y - centerOfChildY})
-                    );
-                    animator.start();
                     _selectedColor = child.getColor();
+                    break;
                 }
             }
         }
         return true;
+    }
+
+    private void returnChildToOriginalSpot(PaintView child, float initialX, float initialY) {
+        // Otherwise return the paint to its original location
+        ObjectAnimator animator = new ObjectAnimator();
+        animator.setTarget(child);
+        animator.setDuration(200);
+
+        float centerOfChildX = child.getWidth() / 2;
+        float centerOfChildY = child.getHeight() / 2;
+
+        // Set the splotch back to its original place. Figure out how to
+        //  move from the endpoint back to the original position.
+        animator.setValues(
+                PropertyValuesHolder.ofFloat("x",
+                        new float[]{initialX - child.getWidth() / 2, _centerPosOfSplotches.get(child).x - centerOfChildX}),
+                PropertyValuesHolder.ofFloat("y",
+                        new float[]{initialY - child.getHeight() / 2, _centerPosOfSplotches.get(child).y - centerOfChildY})
+        );
+        animator.start();
     }
 
     /**
@@ -113,7 +154,7 @@ public class PaletteView extends ViewGroup {
      * @return True - If the selected splotch is over another splotch so
      * the colors can be mixed.
      */
-    private boolean mixPaint(PaintView SelectedChild, float x, float y) {
+    private PaintView mixPaint(PaintView SelectedChild, float x, float y) {
 
         Iterator itr = _centerPosOfSplotches.entrySet().iterator();
         while (itr.hasNext()) {
@@ -124,12 +165,11 @@ public class PaletteView extends ViewGroup {
                 float childCenterY = ((PointF) pairs.getValue()).y;
                 float distance = (float) Math.sqrt(Math.pow(childCenterX - x, 2) + Math.pow(childCenterY - y, 2));
                 if (distance < ((PaintView) pairs.getKey()).getRadius()) {
-                    return true;
+                    return (PaintView) pairs.getKey();
                 }
             }
         }
-
-        return false;
+        return null;
     }
 
     /**
@@ -211,11 +251,14 @@ public class PaletteView extends ViewGroup {
         _childrenNotGone = 0;
         for (int childIndex = 0; childIndex < getChildCount(); childIndex++) {
 
-            View child = getChildAt(childIndex);
+            PaintView child = (PaintView)getChildAt(childIndex);
             _children.add(child);
             if (child.getVisibility() == GONE) {
                 continue;
             }
+//            if(child.isActive){
+//                returnChildToOriginalSpot();
+//            }
             childWidthMax = Math.max(childWidthMax, child.getMeasuredWidth());
             childHeightMax = Math.max(childHeightMax, child.getMeasuredHeight());
             _childrenNotGone++;
@@ -247,12 +290,12 @@ public class PaletteView extends ViewGroup {
             }
         }
         _centerPosOfSplotches.clear();
+        //PaintView selectedChild;
         for (int childIndex = 0; childIndex < getChildCount(); childIndex++) {
 
             double angle = (double) childIndex / (double) _childrenNotGone * 2 * ((Math.PI));
             int childCenterX = (int) (_layoutRect.centerX() + _layoutRect.width() * 0.6 * Math.cos(angle));
             int childCenterY = (int) (_layoutRect.centerY() + _layoutRect.height() * 0.6 * Math.sin(angle));
-
 
             View child = getChildAt(childIndex);
             Rect childLayout = new Rect();
@@ -268,8 +311,13 @@ public class PaletteView extends ViewGroup {
                 childLayout.top = childCenterY - childHeightMax / 2;
                 childLayout.right = childCenterX + childWidthMax / 2;
                 childLayout.bottom = childCenterY + childHeightMax / 2;
+
+//                if(((PaintView)child).isActive){
+//                      selectedChild = (PaintView)child;
+//                }
             }
             child.layout(childLayout.left, childLayout.top, childLayout.right, childLayout.bottom);
+            returnChildToOriginalSpot((PaintView)child, childCenterX, childCenterY);
         }
 
     }

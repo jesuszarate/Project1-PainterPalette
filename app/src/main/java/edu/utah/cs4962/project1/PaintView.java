@@ -93,7 +93,7 @@ public class PaintView extends View {
         return super.onTouchEvent(event);
     }
 
-    private void makeOtherSplotchesInactive() {
+    public void makeOtherSplotchesInactive() {
         ArrayList<View> Children = PaletteView._children;
 
         PaintView child;
