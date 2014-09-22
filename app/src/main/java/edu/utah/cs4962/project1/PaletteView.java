@@ -44,7 +44,8 @@ public class PaletteView extends ViewGroup {
         PaintView paintView = new PaintView(getContext());
 
         paintView.setColor(0xFFFF1493);
-        addView(paintView, new LinearLayout.LayoutParams(200, ViewGroup.LayoutParams.WRAP_CONTENT));
+        //addView(paintView, new LinearLayout.LayoutParams(200, ViewGroup.LayoutParams.WRAP_CONTENT));
+        addView(paintView, new LayoutParams(200, LayoutParams.WRAP_CONTENT));
         invalidate();
     }
 
@@ -106,24 +107,23 @@ public class PaletteView extends ViewGroup {
     }
 
     /**
-     *
      * @param SelectedChild
-     * @param x - x point of the position of the selected child.
-     * @param y - y point of the position of the selected child.
+     * @param x             - x point of the position of the selected child.
+     * @param y             - y point of the position of the selected child.
      * @return True - If the selected splotch is over another splotch so
      * the colors can be mixed.
      */
     private boolean mixPaint(PaintView SelectedChild, float x, float y) {
 
         Iterator itr = _centerPosOfSplotches.entrySet().iterator();
-        while(itr.hasNext()){
-            Map.Entry pairs = (Map.Entry)itr.next();
-            if(!pairs.getKey().equals(SelectedChild)){
+        while (itr.hasNext()) {
+            Map.Entry pairs = (Map.Entry) itr.next();
+            if (!pairs.getKey().equals(SelectedChild)) {
 
-                float childCenterX = ((PointF)pairs.getValue()).x;
-                float childCenterY = ((PointF)pairs.getValue()).y;
+                float childCenterX = ((PointF) pairs.getValue()).x;
+                float childCenterY = ((PointF) pairs.getValue()).y;
                 float distance = (float) Math.sqrt(Math.pow(childCenterX - x, 2) + Math.pow(childCenterY - y, 2));
-                if(distance < ((PaintView)pairs.getKey()).getRadius()){
+                if (distance < ((PaintView) pairs.getKey()).getRadius()) {
                     return true;
                 }
             }
@@ -249,14 +249,13 @@ public class PaletteView extends ViewGroup {
                 path.lineTo(point.x, point.y);
             }
         }
-
+        _centerPosOfSplotches.clear();
         for (int childIndex = 0; childIndex < getChildCount(); childIndex++) {
 
             double angle = (double) childIndex / (double) _childrenNotGone * 2 * ((Math.PI));
             int childCenterX = (int) (_layoutRect.centerX() + _layoutRect.width() * 0.6 * Math.cos(angle));
             int childCenterY = (int) (_layoutRect.centerY() + _layoutRect.height() * 0.6 * Math.sin(angle));
 
-            _centerPosOfSplotches.put((PaintView) getChildAt(childIndex), new PointF(childCenterX, childCenterY));
 
             View child = getChildAt(childIndex);
             Rect childLayout = new Rect();
@@ -267,6 +266,7 @@ public class PaletteView extends ViewGroup {
                 childLayout.right = 0;
                 childLayout.bottom = 0;
             } else {
+                _centerPosOfSplotches.put((PaintView) getChildAt(childIndex), new PointF(childCenterX, childCenterY));
                 childLayout.left = childCenterX - childWidthMax / 2;
                 childLayout.top = childCenterY - childHeightMax / 2;
                 childLayout.right = childCenterX + childWidthMax / 2;

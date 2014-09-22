@@ -26,10 +26,10 @@ public class PaintActivity extends Activity {
         LinearLayout rootLayout = new LinearLayout(this);
         rootLayout.setOrientation(LinearLayout.VERTICAL);
 
-        View view = new View(this);
-        view.setBackgroundColor(Color.RED);
+        PaintAreaView paintAreaView = new PaintAreaView(this);
+        paintAreaView.setBackgroundColor(Color.BLACK);
 
-        rootLayout.addView(view, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+        rootLayout.addView(paintAreaView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
 
         final PaletteView paletteLayout = new PaletteView(this);
         //rootLayout.setOrientation(LinearLayout.VERTICAL);
