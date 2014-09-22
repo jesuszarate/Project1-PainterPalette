@@ -96,33 +96,5 @@ public class PaintActivity extends Activity {
 
 
     }
-    private class Line{
-        private PointF _x;
-        private PointF _y;
-        private Color _color;
 
-        public PointF get_x() {
-            return _x;
-        }
-
-        public void set_x(PointF _x) {
-            this._x = _x;
-        }
-
-        public PointF get_y() {
-            return _y;
-        }
-
-        public void set_y(PointF _y) {
-            this._y = _y;
-        }
-
-        public Color get_color() {
-            return _color;
-        }
-
-        public void set_color(Color _color) {
-            this._color = _color;
-        }
-    }
 }

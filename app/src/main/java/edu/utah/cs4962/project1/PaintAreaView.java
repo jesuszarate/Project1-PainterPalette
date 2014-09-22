@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
@@ -20,17 +19,13 @@ public class PaintAreaView extends ViewGroup {
 
 
     private int _lineCount = -1;
-    HashMap<Integer, ArrayList<PointF>> _linePoints = new HashMap<Integer, ArrayList<PointF>>();
+    //HashMap<Integer, ArrayList<PointF>> _linePoints = new HashMap<Integer, ArrayList<PointF>>();
+    HashMap<Integer, Line> _linePoints = new HashMap<Integer, Line>();
     private int _lineColor = Color.BLACK;
 
     public PaintAreaView(Context context) {
         super(context);
         setBackgroundColor(Color.WHITE);
-
-//        mTransformedView = new View(context);
-//        mTransformedView.setBackgroundColor(Color.GREEN);
-//        mTransformedView.setLayoutParams(new ViewGroup.LayoutParams(1, 1));
-//        addView(mTransformedView);
     }
 
     @Override
@@ -46,14 +41,6 @@ public class PaintAreaView extends ViewGroup {
             if (child.isActive) {
                 _lineColor = child.getColor();
             }
-//            View child = getChildAt(childIndex);
-//            child.layout(
-//                    getWidth()  / 2 - child.getMeasuredWidth()  / 2,
-//                    getHeight() / 2 - child.getMeasuredHeight() / 2,
-//                    getWidth()  / 2 + child.getMeasuredWidth()  / 2,
-//                    getHeight() / 2 + child.getMeasuredHeight() / 2
-//            );
-
         }
     }
 
@@ -64,11 +51,14 @@ public class PaintAreaView extends ViewGroup {
 
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
             _lineCount++;
-            ArrayList<PointF> newPointList = new ArrayList<PointF>();
-            _linePoints.put(_lineCount, newPointList);
+            //ArrayList<PointF> newPointList = new ArrayList<PointF>();
+            Line line = new Line();
+            line.setColor(PaletteView._selectedColor);
+
+            _linePoints.put(_lineCount, line);
         }
 
-        _linePoints.get(_lineCount).add(new PointF(x, y));
+        _linePoints.get(_lineCount).linePoints.add(new PointF(x, y));
 
         invalidate();
 
@@ -85,24 +75,36 @@ public class PaintAreaView extends ViewGroup {
             polylinePaint.setStyle(Paint.Style.STROKE);
             polylinePaint.setStrokeWidth(2.0f);
             Path polylinePath = new Path();
-
-            if(lineIndex == _linePoints.size() - 1){
-                polylinePaint.setColor(PaletteView._selectedColor);
-            }
+            polylinePaint.setColor(_linePoints.get(lineIndex).getColor());
 
             if (!_linePoints.isEmpty()) {
                 try {
-                    polylinePath.moveTo(_linePoints.get(lineIndex).get(0).x, _linePoints.get(lineIndex).get(0).y);
+                    polylinePath.moveTo(_linePoints.get(lineIndex).linePoints.get(0).x,
+                            _linePoints.get(lineIndex).linePoints.get(0).y);
                 } catch (Exception e) {
                     continue;
                 }
 
-                for (PointF point : _linePoints.get(lineIndex)) {
+                for (PointF point : _linePoints.get(lineIndex).linePoints) {
                     polylinePath.lineTo(point.x, point.y);
                 }
             }
+
             canvas.drawPath(polylinePath, polylinePaint);
         }
     }
 
+    private class Line {
+        ArrayList<PointF> linePoints = new ArrayList<PointF>();
+        private int _color;
+
+        public int getColor() {
+            return _color;
+        }
+
+        public void setColor(int _color) {
+            this._color = _color;
+        }
+    }
 }
+
