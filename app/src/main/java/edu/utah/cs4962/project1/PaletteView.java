@@ -33,6 +33,8 @@ public class PaletteView extends ViewGroup {
 
     private int _childrenNotGone = 0;
 
+    private int _childrenGone = 0;
+
     public static int _selectedColor = Color.BLACK;
 
     RectF _paletteRect;
@@ -42,39 +44,40 @@ public class PaletteView extends ViewGroup {
     }
 
     public void addNewColor(PaintView child, PaintView mixWithThisColor) {
-        PaintView paintView = new PaintView(getContext());
+        if(_childrenNotGone <= 10) {
+            PaintView paintView = new PaintView(getContext());
+            int firstColor = child.getColor();
+            int secondColor = mixWithThisColor.getColor();
+            int red1 = firstColor & 0x00FF0000;
+            int red2 = secondColor & 0x00FF0000;
 
-        int firstColor = child.getColor();
-        int secondColor = mixWithThisColor.getColor();
-        int red1 = firstColor & 0x00FF0000;
-        int red2 = secondColor & 0x00FF0000;
+            int green1 = firstColor & 0x0000FF00;
+            int green2 = secondColor & 0x0000FF00;
 
-        int green1 = firstColor & 0x0000FF00;
-        int green2 = secondColor & 0x0000FF00;
+            int blue1 = firstColor & 0x000000FF;
+            int blue2 = secondColor & 0x000000FF;
 
-        int blue1 = firstColor & 0x000000FF;
-        int blue2 = secondColor & 0x000000FF;
+            int red = (red1 + red2) / 2;
+            int green = (green1 + green2) / 2;
+            int blue = (blue1 + blue2) / 2;
 
-        int red = (red1 + red2) / 2;
-        int green = (green1 + green2) / 2;
-        int blue = (blue1 + blue2) / 2;
+            int color = 0xFF000000 | red | green | blue;
 
-        int color = 0xFF000000 | red | green | blue;
+            paintView.setColor(color);
+            addView(paintView, new LayoutParams(200, LayoutParams.WRAP_CONTENT));
 
-        paintView.setColor(color);
-        addView(paintView, new LayoutParams(200, LayoutParams.WRAP_CONTENT));
-
-        paintView.setOnSplotchTouchListener(new PaintView.OnSplotchTouchListener() {
-            @Override
-            public void onSplotchTouched(PaintView v) {
-                invalidate();
-            }
-        });
-        this.invalidate();
+            paintView.setOnSplotchTouchListener(new PaintView.OnSplotchTouchListener() {
+                @Override
+                public void onSplotchTouched(PaintView v) {
+                    invalidate();
+                }
+            });
+            this.invalidate();
+        }
     }
 
     public boolean removeColor(PaintView paintView) {
-        if (getChildCount() > 1) {
+        if (getChildCount() - _childrenGone > 1) {
             paintView.setVisibility(GONE);
             return true;
         }
@@ -125,9 +128,6 @@ public class PaletteView extends ViewGroup {
 
                         _selectedColor = child.getColor();
                         break;
-
-                        //child.setVisibility(GONE);
-                        //invalidate();
                     }
                 }
             }
@@ -331,13 +331,13 @@ public class PaletteView extends ViewGroup {
         _centerPosOfSplotches.clear();
         boolean flag = false;
         int index;
-        int childrenGone = 0;
+        _childrenGone = 0;
         for (int childIndex = 0; childIndex < getChildCount(); childIndex++) {
 
             if (flag) {
                 // Increase the subtracting amount as there is more children
                 // that are gone.
-                index = childIndex - childrenGone;
+                index = childIndex - _childrenGone;
             } else {
                 index = childIndex;
             }
@@ -354,7 +354,7 @@ public class PaletteView extends ViewGroup {
                 childLayout.right = 0;
                 childLayout.bottom = 0;
                 flag = true;
-                childrenGone++;
+                _childrenGone++;
                 child.layout(childLayout.left, childLayout.top, childLayout.right, childLayout.bottom);
                 continue;
             } else {
