@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
@@ -29,12 +30,11 @@ public class PaletteView extends ViewGroup {
     private ArrayList<PointF> _points = new ArrayList<PointF>();
     private HashMap<PaintView, PointF> _centerPosOfSplotches = new HashMap<PaintView, PointF>();
 
-//    private float _initialXPos = 0.0f;
-//    private float _initialYPos = 0.0f;
-
     private Rect _layoutRect;
 
     private int _childrenNotGone = 0;
+
+    public static int _selectedColor = Color.BLACK;
 
     public PaletteView(Context context) {
         super(context);
@@ -99,7 +99,7 @@ public class PaletteView extends ViewGroup {
                                     new float[]{y - child.getHeight() / 2, _centerPosOfSplotches.get(child).y - centerOfChildY})
                     );
                     animator.start();
-
+                    _selectedColor = child.getColor();
                 }
             }
         }
@@ -171,8 +171,6 @@ public class PaletteView extends ViewGroup {
 
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(0x55DC9D60);
-        //paint.setColor(Color.GREEN);
-        //Path path = new Path();
 
         RectF paletteRect = new RectF();
         paletteRect.left = getPaddingLeft();
@@ -186,7 +184,6 @@ public class PaletteView extends ViewGroup {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-
 
         int widthSpec = MeasureSpec.getSize(widthMeasureSpec);
         int heightSpec = MeasureSpec.getSize(heightMeasureSpec);

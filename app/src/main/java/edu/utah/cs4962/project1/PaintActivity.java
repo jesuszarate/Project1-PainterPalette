@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -26,8 +27,8 @@ public class PaintActivity extends Activity {
         LinearLayout rootLayout = new LinearLayout(this);
         rootLayout.setOrientation(LinearLayout.VERTICAL);
 
-        PaintAreaView paintAreaView = new PaintAreaView(this);
-        paintAreaView.setBackgroundColor(Color.BLACK);
+        final PaintAreaView paintAreaView = new PaintAreaView(this);
+        paintAreaView.setBackgroundColor(Color.WHITE);
 
         rootLayout.addView(paintAreaView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
 
@@ -87,11 +88,41 @@ public class PaintActivity extends Activity {
 //                    ((PaintView)v).setAsSelected();
                     //((PaintView)v).setColor(Color.RED);
                     //((PaintView)v).setBackgroundColor(Color.CYAN);
+                    paintAreaView.invalidate();
                 }
             });
         }
         setContentView(rootLayout);
 
 
+    }
+    private class Line{
+        private PointF _x;
+        private PointF _y;
+        private Color _color;
+
+        public PointF get_x() {
+            return _x;
+        }
+
+        public void set_x(PointF _x) {
+            this._x = _x;
+        }
+
+        public PointF get_y() {
+            return _y;
+        }
+
+        public void set_y(PointF _y) {
+            this._y = _y;
+        }
+
+        public Color get_color() {
+            return _color;
+        }
+
+        public void set_color(Color _color) {
+            this._color = _color;
+        }
     }
 }

@@ -3,7 +3,6 @@ package edu.utah.cs4962.project1;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
@@ -19,19 +18,19 @@ import java.util.HashMap;
  */
 public class PaintAreaView extends ViewGroup {
 
-    View mTransformedView = null;
 
     private int _lineCount = -1;
     HashMap<Integer, ArrayList<PointF>> _linePoints = new HashMap<Integer, ArrayList<PointF>>();
+    private int _lineColor = Color.BLACK;
 
     public PaintAreaView(Context context) {
         super(context);
-        setBackgroundColor(Color.BLUE);
+        setBackgroundColor(Color.WHITE);
 
-        mTransformedView = new View(context);
-        mTransformedView.setBackgroundColor(Color.GREEN);
-        mTransformedView.setLayoutParams(new ViewGroup.LayoutParams(1, 1));
-        addView(mTransformedView);
+//        mTransformedView = new View(context);
+//        mTransformedView.setBackgroundColor(Color.GREEN);
+//        mTransformedView.setLayoutParams(new ViewGroup.LayoutParams(1, 1));
+//        addView(mTransformedView);
     }
 
     @Override
@@ -43,13 +42,18 @@ public class PaintAreaView extends ViewGroup {
     @Override
     protected void onLayout(boolean b, int i, int i2, int i3, int i4) {
         for (int childIndex = 0; childIndex < getChildCount(); childIndex++) {
-            View child = getChildAt(childIndex);
-            child.layout(
-                    getWidth() / 2 - child.getMeasuredWidth() / 2,
-                    getHeight() / 2 - child.getMeasuredHeight() / 2,
-                    getWidth() / 2 + child.getMeasuredWidth() / 2,
-                    getHeight() / 2 + child.getMeasuredHeight() / 2
-            );
+            PaintView child = (PaintView) getChildAt(childIndex);
+            if (child.isActive) {
+                _lineColor = child.getColor();
+            }
+//            View child = getChildAt(childIndex);
+//            child.layout(
+//                    getWidth()  / 2 - child.getMeasuredWidth()  / 2,
+//                    getHeight() / 2 - child.getMeasuredHeight() / 2,
+//                    getWidth()  / 2 + child.getMeasuredWidth()  / 2,
+//                    getHeight() / 2 + child.getMeasuredHeight() / 2
+//            );
+
         }
     }
 
@@ -80,13 +84,16 @@ public class PaintAreaView extends ViewGroup {
             Paint polylinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             polylinePaint.setStyle(Paint.Style.STROKE);
             polylinePaint.setStrokeWidth(2.0f);
-            polylinePaint.setColor(Color.RED);
             Path polylinePath = new Path();
+
+            if(lineIndex == _linePoints.size() - 1){
+                polylinePaint.setColor(PaletteView._selectedColor);
+            }
 
             if (!_linePoints.isEmpty()) {
                 try {
                     polylinePath.moveTo(_linePoints.get(lineIndex).get(0).x, _linePoints.get(lineIndex).get(0).y);
-                }catch (Exception e){
+                } catch (Exception e) {
                     continue;
                 }
 
@@ -96,8 +103,6 @@ public class PaintAreaView extends ViewGroup {
             }
             canvas.drawPath(polylinePath, polylinePaint);
         }
-
-//
     }
 
 }
