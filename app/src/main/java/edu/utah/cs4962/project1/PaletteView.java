@@ -2,20 +2,23 @@ package edu.utah.cs4962.project1;
 
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,7 +30,7 @@ import java.util.Map;
 public class PaletteView extends ViewGroup {
 
     public static ArrayList<View> _children = new ArrayList<View>();
-    private ArrayList<PointF> _points = new ArrayList<PointF>();
+    //private ArrayList<PointF> _points = new ArrayList<PointF>();
     private HashMap<PaintView, PointF> _centerPosOfSplotches = new HashMap<PaintView, PointF>();
 
     private Rect _layoutRect;
@@ -49,18 +52,18 @@ public class PaletteView extends ViewGroup {
             PaintView paintView = new PaintView(getContext());
             int firstColor = child.getColor();
             int secondColor = mixWithThisColor.getColor();
-            int red1 = firstColor & 0x00FF0000;
+            int red1 = firstColor  & 0x00FF0000;
             int red2 = secondColor & 0x00FF0000;
 
-            int green1 = firstColor & 0x0000FF00;
+            int green1 = firstColor  & 0x0000FF00;
             int green2 = secondColor & 0x0000FF00;
 
-            int blue1 = firstColor & 0x000000FF;
+            int blue1 = firstColor  & 0x000000FF;
             int blue2 = secondColor & 0x000000FF;
 
-            int red = (red1 + red2) / 2;
+            int red   = (red1 + red2)     / 2;
             int green = (green1 + green2) / 2;
-            int blue = (blue1 + blue2) / 2;
+            int blue  = (blue1 + blue2)   / 2;
 
             int color = 0xFF000000 | red | green | blue;
 
@@ -73,6 +76,7 @@ public class PaletteView extends ViewGroup {
                     invalidate();
                 }
             });
+
             this.invalidate();
         }
     }
@@ -112,6 +116,7 @@ public class PaletteView extends ViewGroup {
                         // Return the paint to its original location
                         returnChildToOriginalSpot(child, x, y);
 
+                        //_selectedColor = mixWithThisColor.getColor();
                         _selectedColor = child.getColor();
                         break;
                     } else if(!removeColor(child)){
@@ -128,6 +133,7 @@ public class PaletteView extends ViewGroup {
                         returnChildToOriginalSpot(child, x, y);
 
                         _selectedColor = child.getColor();
+                        //_selectedColor = mixWithThisColor.getColor();
                         break;
                     }
                 }
@@ -144,23 +150,26 @@ public class PaletteView extends ViewGroup {
      * @param initialY
      */
     private void returnChildToOriginalSpot(PaintView child, float initialX, float initialY) {
-        // Otherwise return the paint to its original location
-        ObjectAnimator animator = new ObjectAnimator();
-        animator.setTarget(child);
-        animator.setDuration(200);
+        try {
+            // Otherwise return the paint to its original location
+            ObjectAnimator animator = new ObjectAnimator();
+            animator.setTarget(child);
+            animator.setDuration(200);
 
-        float centerOfChildX = child.getWidth() / 2;
-        float centerOfChildY = child.getHeight() / 2;
+            float centerOfChildX = child.getWidth() / 2;
+            float centerOfChildY = child.getHeight() / 2;
 
-        // Set the splotch back to its original place. Figure out how to
-        //  move from the endpoint back to the original position.
-        animator.setValues(
-                PropertyValuesHolder.ofFloat("x",
-                        new float[]{initialX - child.getWidth() / 2, _centerPosOfSplotches.get(child).x - centerOfChildX}),
-                PropertyValuesHolder.ofFloat("y",
-                        new float[]{initialY - child.getHeight() / 2, _centerPosOfSplotches.get(child).y - centerOfChildY})
-        );
-        animator.start();
+            // Set the splotch back to its original place. Figure out how to
+            //  move from the endpoint back to the original position.
+            animator.setValues(
+                    PropertyValuesHolder.ofFloat("x",
+                            new float[]{initialX - child.getWidth() / 2, _centerPosOfSplotches.get(child).x - centerOfChildX}),
+                    PropertyValuesHolder.ofFloat("y",
+                            new float[]{initialY - child.getHeight() / 2, _centerPosOfSplotches.get(child).y - centerOfChildY})
+            );
+            animator.start();
+        }
+        catch (Exception e){}
     }
 
     /**
@@ -206,28 +215,12 @@ public class PaletteView extends ViewGroup {
         float radiusY = _paletteRect.height() / 2;
         PointF circleCenter = new PointF(_paletteRect.centerX(), _paletteRect.centerY());
 
-//        float distance = (Math.pow(x - circleCenter.x, 2))/(radiusX * radiusX)) + (Math.pow((y - circleCenter.y), 2))/(radiusY * radiusY));
-
         float distance = (((float) Math.pow(x - circleCenter.x, 2)) / (radiusX * radiusX)) + (((float) Math.pow((y - circleCenter.y), 2)) / (radiusY * radiusY));
 
         if (distance <= 1) {
             Log.i("PaletteView", "Touched inside the palette ellipse");
             return true;
         }
-
-
-//        double angle = (double) childIndex / (double) _childrenNotGone * 2 * ((Math.PI));
-//        int childCenterX = (int) (_layoutRect.centerX() + _layoutRect.width() * 0.6 * Math.cos(angle));
-//        int childCenterY = (int) (_layoutRect.centerY() + _layoutRect.height() * 0.6 * Math.sin(angle));
-//
-//        // Distance formula-> sqrt((x1 - x2)^2 + (y1 - y2)^2)
-//        //float distance = (float) Math.sqrt(Math.pow(CircleCenterX - x, 2) + Math.pow(CircleCenterY - y, 2));
-//        float distance = (float) Math.sqrt(Math.pow(childCenterX - x, 2) + Math.pow(childCenterY - y, 2));
-//
-//        if (distance < radius) {
-//            Log.i("paint_view", "Touched inside the circle");
-//            return true;
-//        }
         return false;
 
     }
@@ -236,40 +229,8 @@ public class PaletteView extends ViewGroup {
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
 
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(0x55DC9D60);
-        Path path = new Path();
-
-        _paletteRect = new RectF();
-        _paletteRect.left = getPaddingLeft();
-        _paletteRect.top = getPaddingTop();
-        _paletteRect.right = getWidth() - getPaddingRight();
-        _paletteRect.bottom = getHeight() - getPaddingBottom();
-
-        PointF circleCenter = new PointF(_paletteRect.centerX(), _paletteRect.centerY());
-        float radius = _paletteRect.height() / 2;
-        int points = 50;
-
-        for (int circlePoint = 0; circlePoint < points; circlePoint++) {
-            PointF point = new PointF();
-
-            // x = centerX + r * cos(a)
-            // y = centerY + r * cos(a)
-            float twoPi = (float) (2 * Math.PI);
-            point.x = (float) (circleCenter.x + (_paletteRect.width() / 2) * Math.cos(twoPi * ((double) circlePoint / (double) points)));
-            point.y = (float) (circleCenter.y + (_paletteRect.height() / 2) * Math.sin(twoPi * ((double) circlePoint / (double) points)));
-
-            if (circlePoint == 0) {
-                path.moveTo(point.x, point.y);
-            } else {
-                path.lineTo(point.x, point.y);
-            }
-        }
-
-        canvas.drawPath(path, paint);
-        //canvas.drawOval(paletteRect, paint);
+        setBackground(new drawable());
     }
-
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -376,4 +337,59 @@ public class PaletteView extends ViewGroup {
 
         }
     }
+
+    private class drawable extends  Drawable{
+
+            public void draw(Canvas canvas) {
+                Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                paint.setColor(0xAADC9D60);
+                Path path = new Path();
+
+                _paletteRect = new RectF();
+                _paletteRect.left = getPaddingLeft();
+                _paletteRect.top = getPaddingTop();
+                _paletteRect.right = getWidth() - getPaddingRight();
+                _paletteRect.bottom = getHeight() - getPaddingBottom();
+
+                PointF circleCenter = new PointF(_paletteRect.centerX(), _paletteRect.centerY());
+                float radius = _paletteRect.height() / 2;
+                int points = 50;
+
+                for (int circlePoint = 0; circlePoint < points; circlePoint++) {
+                    PointF point = new PointF();
+
+                    // x = centerX + r * cos(a)
+                    // y = centerY + r * cos(a)
+                    float twoPi = (float) (2 * Math.PI);
+                    point.x = (float) (circleCenter.x + (_paletteRect.width() / 2) * Math.cos(twoPi * ((double) circlePoint / (double) points)));
+                    point.y = (float) (circleCenter.y + (_paletteRect.height() / 2) * Math.sin(twoPi * ((double) circlePoint / (double) points)));
+
+                    if (circlePoint == 0) {
+                        path.moveTo(point.x, point.y);
+                    } else {
+                        path.lineTo(point.x, point.y);
+                    }
+                }
+
+                canvas.drawPath(path, paint);
+            }
+
+        @Override
+        public void setAlpha(int i) {
+
+        }
+
+        @Override
+        public void setColorFilter(ColorFilter colorFilter) {
+
+        }
+
+        @Override
+        public int getOpacity() {
+            return 0;
+        }
+
+    }
+
+
 }

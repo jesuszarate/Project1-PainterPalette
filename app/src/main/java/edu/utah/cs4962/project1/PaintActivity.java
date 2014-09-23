@@ -1,27 +1,14 @@
 package edu.utah.cs4962.project1;
 
 import android.app.Activity;
-import android.content.res.Configuration;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PointF;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 
 public class PaintActivity extends Activity {
-
-    //PaintView _paintView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +28,6 @@ public class PaintActivity extends Activity {
         LinearLayout.LayoutParams paletteViewLP =  new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1);
         paletteViewLP.gravity = Gravity.CENTER_HORIZONTAL;
         rootLayout.addView(paletteLayout, paletteViewLP);
-        //rootLayout.addView(paletteLayout, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1));
 
         // Determine how many splotches we want on the palette
         for (int splotchIndex = 0; splotchIndex < 6; splotchIndex++) {
