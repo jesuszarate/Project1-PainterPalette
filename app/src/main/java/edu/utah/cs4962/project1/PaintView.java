@@ -1,6 +1,7 @@
 package edu.utah.cs4962.project1;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -220,11 +221,18 @@ public class PaintView extends View {
             height = width;
         }
 
-        // resolveSizeAndState(int size, int measureSpec, int childMeasuredState)
-        // -> childMeasuredState - boolean asks if you are happy with the size or not.
-        setMeasuredDimension(resolveSizeAndState(width, widthMeasureSpec,
-                        width < getSuggestedMinimumWidth() ? MEASURED_STATE_TOO_SMALL : 0),
-                resolveSizeAndState(height, heightMeasureSpec,
-                        height < getSuggestedMinimumHeight() ? MEASURED_STATE_TOO_SMALL : 0));
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            // resolveSizeAndState(int size, int measureSpec, int childMeasuredState)
+            // -> childMeasuredState - boolean asks if you are happy with the size or not.
+            setMeasuredDimension(resolveSizeAndState((int)(width * 0.65), widthMeasureSpec,
+                            width < getSuggestedMinimumWidth() ? MEASURED_STATE_TOO_SMALL : 0),
+                    resolveSizeAndState((int)(height * 0.65), heightMeasureSpec,
+                            height < getSuggestedMinimumHeight() ? MEASURED_STATE_TOO_SMALL : 0));
+        }else{
+            setMeasuredDimension(resolveSizeAndState(width, widthMeasureSpec,
+                            width < getSuggestedMinimumWidth() ? MEASURED_STATE_TOO_SMALL : 0),
+                    resolveSizeAndState(height, heightMeasureSpec,
+                            height < getSuggestedMinimumHeight() ? MEASURED_STATE_TOO_SMALL : 0));
+        }
     }
 }

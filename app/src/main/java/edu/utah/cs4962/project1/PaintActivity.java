@@ -1,6 +1,7 @@
 package edu.utah.cs4962.project1;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -8,6 +9,8 @@ import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -24,42 +27,46 @@ public class PaintActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         LinearLayout rootLayout = new LinearLayout(this);
         rootLayout.setOrientation(LinearLayout.VERTICAL);
 
         final PaintAreaView paintAreaView = new PaintAreaView(this);
         paintAreaView.setBackgroundColor(Color.WHITE);
 
+        PaletteView paletteLayout = new PaletteView(this);
+
         rootLayout.addView(paintAreaView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
 
-        final PaletteView paletteLayout = new PaletteView(this);
-        //rootLayout.setOrientation(LinearLayout.VERTICAL);
-        rootLayout.addView(paletteLayout, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1));
+        LinearLayout.LayoutParams paletteViewLP =  new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1);
+        paletteViewLP.gravity = Gravity.CENTER_HORIZONTAL;
+        rootLayout.addView(paletteLayout, paletteViewLP);
+        //rootLayout.addView(paletteLayout, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1));
 
         // Determine how many splotches we want on the palette
         for (int splotchIndex = 0; splotchIndex < 6; splotchIndex++) {
 
             PaintView paintView = new PaintView(this);
 
-            if(splotchIndex == 0) {
+            if (splotchIndex == 0) {
                 paintView.setColor(Color.RED);
             }
-            if(splotchIndex == 1) {
+            if (splotchIndex == 1) {
                 // Orange
                 paintView.setColor(0xFFFFA500);
             }
-            if(splotchIndex == 2) {
+            if (splotchIndex == 2) {
                 paintView.setColor(Color.YELLOW);
             }
-            if(splotchIndex == 3) {
+            if (splotchIndex == 3) {
                 // Blue
                 paintView.setColor(0xFF0000FF);
             }
-            if(splotchIndex == 4) {
+            if (splotchIndex == 4) {
                 // Green
                 paintView.setColor(0xFF00FF00);
             }
-            if(splotchIndex == 5) {
+            if (splotchIndex == 5) {
                 // Purple
                 paintView.setColor(0xFF800080);
             }

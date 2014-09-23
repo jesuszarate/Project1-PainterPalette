@@ -3,6 +3,7 @@ package edu.utah.cs4962.project1;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -135,6 +136,13 @@ public class PaletteView extends ViewGroup {
         return true;
     }
 
+    /**
+     * Animates the paint splotch so that it looks like the child is returning
+     * to the spot where it was originally.
+     * @param child
+     * @param initialX
+     * @param initialY
+     */
     private void returnChildToOriginalSpot(PaintView child, float initialX, float initialY) {
         // Otherwise return the paint to its original location
         ObjectAnimator animator = new ObjectAnimator();
@@ -266,21 +274,40 @@ public class PaletteView extends ViewGroup {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
-        int widthSpec = MeasureSpec.getSize(widthMeasureSpec);
-        int heightSpec = MeasureSpec.getSize(heightMeasureSpec);
-        int width = Math.max(widthSpec, getSuggestedMinimumWidth());
-        int height = Math.max(heightSpec, getSuggestedMinimumHeight());
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            int widthSpec = MeasureSpec.getSize(widthMeasureSpec);
+            int heightSpec = MeasureSpec.getSize(heightMeasureSpec);
+            int width = Math.max(widthSpec, getSuggestedMinimumWidth());
+            int height = Math.max(heightSpec, getSuggestedMinimumHeight());
 
-        int childState = 0;
-        for (int childIndex = 0; childIndex < getChildCount(); childIndex++) {
+            int childState = 0;
+            for (int childIndex = 0; childIndex < getChildCount(); childIndex++) {
 
-            View child = getChildAt(childIndex);
-            measureChild(child, widthMeasureSpec, heightMeasureSpec);
-            childState = combineMeasuredStates(childState, child.getMeasuredState());
+                View child = getChildAt(childIndex);
+                measureChild(child, widthMeasureSpec, heightMeasureSpec);
+                childState = combineMeasuredStates(childState, child.getMeasuredState());
+            }
+
+            setMeasuredDimension(resolveSizeAndState(width/2, widthMeasureSpec, childState),
+                    resolveSizeAndState(height/2, heightMeasureSpec, childState));
         }
+        else {
+            int widthSpec = MeasureSpec.getSize(widthMeasureSpec);
+            int heightSpec = MeasureSpec.getSize(heightMeasureSpec);
+            int width = Math.max(widthSpec, getSuggestedMinimumWidth());
+            int height = Math.max(heightSpec, getSuggestedMinimumHeight());
 
-        setMeasuredDimension(resolveSizeAndState(width, widthMeasureSpec, childState),
-                resolveSizeAndState(height, heightMeasureSpec, childState));
+            int childState = 0;
+            for (int childIndex = 0; childIndex < getChildCount(); childIndex++) {
+
+                View child = getChildAt(childIndex);
+                measureChild(child, widthMeasureSpec, heightMeasureSpec);
+                childState = combineMeasuredStates(childState, child.getMeasuredState());
+            }
+
+            setMeasuredDimension(resolveSizeAndState(width, widthMeasureSpec, childState),
+                    resolveSizeAndState(height, heightMeasureSpec, childState));
+        }
     }
 
     @Override
@@ -307,26 +334,6 @@ public class PaletteView extends ViewGroup {
         _layoutRect.top = getPaddingTop() + 9 * childHeightMax / 10;
         _layoutRect.right = getWidth() - getPaddingRight() - 9 * childWidthMax / 10;
         _layoutRect.bottom = getHeight() - getPaddingBottom() - 9 * childHeightMax / 10;
-
-//        PointF paletteCenter = new PointF(_layoutRect.centerX(), _layoutRect.centerY());
-//        float radius = _layoutRect.width();
-//        int pointCount = 50;
-//        Path path = new Path();
-//        for (int pointIndex = 0; pointIndex < pointCount; pointIndex++) {
-//            PointF point = new PointF();
-//
-//            point.x = paletteCenter.x + radius * (float) Math.cos(((double) pointIndex /
-//                    (double) pointCount) * 2.0 * Math.PI);
-//
-//            point.y = paletteCenter.y + radius * (float) Math.sin(((double) pointIndex /
-//                    (double) pointCount) * 2.0 * Math.PI);
-//
-//            if (pointIndex == 0) {
-//                path.moveTo(point.x, point.y);
-//            } else {
-//                path.lineTo(point.x, point.y);
-//            }
-//        }
 
         _centerPosOfSplotches.clear();
         boolean flag = false;
